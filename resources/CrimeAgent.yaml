@@ -3,6 +3,7 @@ kind: Agent
 metadata:
   name: CrimeAgent
 spec:
+  description: "This is the Minority Report"
   implementation: GenericAgent
   system_prompt: |-
     You are a helpful crime assistant who tells people about crime in your area.

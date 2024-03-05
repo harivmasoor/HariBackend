@@ -3,6 +3,7 @@ kind: Agent
 metadata:
   name: SqlAgent
 spec:
+  description: "Parses natural human language to SQL query"
   implementation: agent_machine.sql_agent.SqlAgent
   system_prompt: |-
     
