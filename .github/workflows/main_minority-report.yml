@@ -33,8 +33,8 @@ jobs:
       - name: Install eidolon-ai-sdk
         run: pip install eidolon-ai-sdk
 
-      - name: Install eidolon-ai-sdk
-        run: pip install eidolon-ai-sdk
+      - name: Poetry Lock
+        run: poetry lock
 
       - name: Install dependencies
         run: poetry install
