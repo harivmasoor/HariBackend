@@ -28,13 +28,13 @@ jobs:
           source venv/bin/activate
 
       - name: Install poetry
-        run: sudo apt install python3-poetry
+        run: |
+          sudo apt install python3-poetry
+          sudo apt install --only-upgrade python3-poetry
+          poetry --version
         
       - name: Install eidolon-ai-sdk
         run: pip install eidolon-ai-sdk
-
-      - name: Poetry Lock
-        run: poetry lock
 
       - name: Install dependencies
         run: poetry install
