@@ -1,4 +1,2 @@
 .DS_Store
-*.env
-requirements.txt
 ${EIDOLON_DATA_DIR}
