@@ -1,11 +1,12 @@
 ARG EIDOLON_VERSION=latest
 FROM docker.io/eidolonai/sdk:$EIDOLON_VERSION
-
 ENV PYTHONUNBUFFERED 1
-RUN export OPENAI_API_KEY=$OPENAI_API_KEY
 
-COPY resources /usr/src/resources
-COPY agent_machine /usr/src/agent_machine
-WORKDIR /usr/src
+COPY resources /resources
+COPY agent_machine /agent_machine
+COPY requirements.txt /requirements.txt
+WORKDIR /
+RUN pip install -r /requirements.txt
+ENV PYTHONPATH="${PYTHONPATH}:agent_machine"
 
 CMD exec eidolon-server resources
