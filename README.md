@@ -20,3 +20,15 @@ If you wish to run the server without MongoDB, include the `-m local_dev` flag:
 ```bash
 poetry run eidolon-server resources/ -m local_dev
 ```
+## Docker Config and Run
+
+.env must contain:
+OPENAI_API_KEY
+CRIME_SQL_CONNECTION_STRING - Change DATABASE= From {ODBC Driver 18 for SQL Server} to {SQL Server}
+
+```bash
+sudo service docker start
+sudo docker build -t my-backend-server .
+sudo docker run -e OPENAI_API_KEY=$OPENAI_API_KEY -p 8080:8080 my-backend-server
+```
+
