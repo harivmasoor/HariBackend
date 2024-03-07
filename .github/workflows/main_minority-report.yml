@@ -36,13 +36,20 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root
 
-      # Optional: Install system dependencies for pyodbc if you're using a specific SQL database that requires an ODBC driver.
-      # Adjust this step based on your database needs. This example shows installation for Microsoft SQL Server.
-      - name: Install MS SQL Server ODBC Driver
+      # Install system dependencies for ODBC
+      - name: Setup ODBC Drivers
         run: |
           sudo apt-get update
-          sudo apt-get install -y unixodbc-dev
-          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17
+          sudo apt-get install -y tdsodbc unixodbc-dev
+          sudo apt-get clean -y
+
+      # Set environment variables
+      - name: Set Environment Variables
+        run: echo "PYTHONUNBUFFERED=1" >> $GITHUB_ENV
+
+      # Set PYTHONPATH to include the agent_machine directory
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=${PYTHONPATH}:$(pwd)/agent_machine" >> $GITHUB_ENV
 
       - name: Run server
         run: poetry run eidolon-server resources/
@@ -54,6 +61,7 @@ jobs:
           app-name: 'minority-report'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_ED7F4B4A492948FBADD488C12068F2C7 }}
+
 
 
 
