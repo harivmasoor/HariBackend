@@ -18,83 +18,61 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python version
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v1
         with:
           python-version: '3.11'
 
-      - name: Install Poetry
+      - name: Create and start virtual environment
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Configure Poetry
-        run: |
-          poetry config virtualenvs.create false
-          poetry --version
-
-      # Assuming you've added pyodbc to your pyproject.toml, this step will install all dependencies including pyodbc
+          python -m venv venv
+          source venv/bin/activate
+      
       - name: Install dependencies
-        run: poetry install --no-root
+        run: pip install -r requirements.txt
+        
+      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
-      # Install system dependencies for ODBC
-      - name: Setup ODBC Drivers
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y tdsodbc unixodbc-dev
-          sudo apt-get clean -y
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
 
-      # Set environment variables
-      - name: Set Environment Variables
-        run: echo "PYTHONUNBUFFERED=1" >> $GITHUB_ENV
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-app
+          path: |
+            release.zip
+            !venv/
 
-      # Set PYTHONPATH to include the agent_machine directory
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=${PYTHONPATH}:$(pwd)/agent_machine" >> $GITHUB_ENV
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write #This is required for requesting the JWT
 
-      - name: Run server
-        run: poetry run eidolon-server resources/
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: python-app
 
-      - name: Deploy to Azure Web App
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+
+      
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_82858F8E550040CDB67C2C737D7D1478 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_EC7E09053087483C8F12DFD6D010D2D9 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_4CFA56DA884440C9AAE1F863CAA0F42C }}
+
+      - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
         id: deploy-to-webapp
         with:
           app-name: 'minority-report'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_ED7F4B4A492948FBADD488C12068F2C7 }}
-
-
-
-
-
-
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
-
-      # - name: Zip artifact for deployment
-      #   run: zip release.zip ./* -r
-
-      # - name: Upload artifact for deployment jobs
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: python-app
-      #     path: |
-      #       release.zip
-      #       !venv/
-
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   environment:
-  #     name: 'Production'
-  #     url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
-  #   steps:
-  #     - name: Download artifact from build job
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: python-app
-
-  #     - name: Unzip artifact for deployment
-  #       run: unzip release.zip
-
-      
-      
+          
