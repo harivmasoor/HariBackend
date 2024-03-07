@@ -32,8 +32,17 @@ jobs:
           poetry config virtualenvs.create false
           poetry --version
 
+      # Assuming you've added pyodbc to your pyproject.toml, this step will install all dependencies including pyodbc
       - name: Install dependencies
         run: poetry install --no-root
+
+      # Optional: Install system dependencies for pyodbc if you're using a specific SQL database that requires an ODBC driver.
+      # Adjust this step based on your database needs. This example shows installation for Microsoft SQL Server.
+      - name: Install MS SQL Server ODBC Driver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unixodbc-dev
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17
 
       - name: Run server
         run: poetry run eidolon-server resources/
@@ -45,6 +54,7 @@ jobs:
           app-name: 'minority-report'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_ED7F4B4A492948FBADD488C12068F2C7 }}
+
 
 
 
